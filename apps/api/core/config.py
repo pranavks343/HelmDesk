@@ -6,12 +6,20 @@ from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
+_HERE = Path(__file__).resolve()
+# Local dev: core/config.py -> apps/api -> apps -> <repo root> is 3 levels up. Inside the Docker
+# image the layout is flattened (WORKDIR /app *is* apps/api's content, with no repo-root wrapper
+# above it), so that 4th parent doesn't exist - `.parents[3]` raised IndexError and crashed the
+# container on startup. Docker sets every setting via real environment variables anyway (see
+# infra/docker-compose.yml), so the root .env lookup is a local-dev-only convenience; fall back to
+# apps/api's own directory when the repo-root guess isn't available rather than crashing.
+REPO_ROOT = _HERE.parents[3] if len(_HERE.parents) > 3 else _HERE.parents[-1]
+_LOCAL_ENV = _HERE.parents[1] / ".env"  # apps/api/.env
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=(REPO_ROOT / ".env", REPO_ROOT / "apps/api/.env"),
+        env_file=(REPO_ROOT / ".env", _LOCAL_ENV),
         env_file_encoding="utf-8",
         extra="ignore",
     )

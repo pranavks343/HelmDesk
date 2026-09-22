@@ -1,0 +1,8 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "supportpilot": "./src/supportpilot/graph.py:make_graph",
+    "daily_digest": "./src/supportpilot/functional/daily_digest.py:make_daily_digest"
+  },
+  "env": ".env"
+}

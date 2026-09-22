@@ -1,0 +1,2 @@
+title: Service Status and Outages
+Check status.nimbuscloud.example for live incident updates. During an outage, API requests may return 503 or time out; retry with backoff once the status page shows resolved.

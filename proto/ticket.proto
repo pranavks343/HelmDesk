@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package supportpilot;
+
+// `api` never calls this directly - `agent-worker` calls it on `notifier` to push results it has
+// already computed (via its own LangGraph pipeline, graph.py) out to the rest of the system.
+// `notifier` doesn't classify or draft anything itself - it's a thin relay: publish to Redis for
+// the live WS feed, then call back to `api` over REST to persist. See agents.md §2/§7/§8.
+//
+// Both RPCs share `TicketRequest` (whichever fields matter for that stage are populated; the
+// rest keep their proto3 zero-value) rather than two near-identical messages - simpler to
+// generate/maintain for two calls this closely related, at the cost of some unused fields on any
+// one call. `ClassifyResponse`/`DraftResponse` are delivery acknowledgements (notifier echoes
+// back what it received once it has published + persisted), not a second round of computation.
+service TicketAgent {
+  rpc ClassifyTicket (TicketRequest) returns (ClassifyResponse);
+  rpc DraftReply (TicketRequest) returns (DraftResponse);
+}
+
+message TicketRequest {
+  string ticket_id = 1;
+  string title = 2;
+  repeated string context_messages = 3; // recent chat_messages text, oldest first
+
+  // populated on the ClassifyTicket push
+  string category = 4;
+  string priority = 5;
+  double classify_confidence = 6;
+
+  // populated on the DraftReply push
+  repeated KBHit kb_hits = 7;
+  string draft_text = 8;
+  double draft_confidence = 9;
+  bool auto_resolve = 10;
+}
+
+message KBHit {
+  string doc_id = 1;
+  string title = 2;
+  string snippet = 3;
+  double score = 4;
+}
+
+message ClassifyResponse {
+  string ticket_id = 1;
+  string category = 2;   // billing | technical | account | general
+  string priority = 3;   // low | medium | high
+  double confidence = 4; // 0..1
+}
+
+message DraftResponse {
+  string ticket_id = 1;
+  string draft_text = 2;
+  double confidence = 3;
+  bool auto_resolve = 4; // true => decide node chose to auto-resolve, not escalate
+}

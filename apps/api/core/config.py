@@ -2,11 +2,19 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=(REPO_ROOT / ".env", REPO_ROOT / "apps/api/.env"),
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     # Postgres (source of truth: users, tickets, ticket_events)
     postgres_dsn: str = "postgresql+asyncpg://supportpilot:supportpilot@localhost:5432/supportpilot"

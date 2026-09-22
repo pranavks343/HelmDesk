@@ -40,8 +40,72 @@ services:
       timeout: 5s
       retries: 10
 
+  api:
+    build:
+      context: ../apps/api
+    ports:
+      - "8000:8000"
+    environment:
+      POSTGRES_DSN: postgresql+asyncpg://supportpilot:supportpilot@postgres:5432/supportpilot
+      MONGO_URI: mongodb://mongo:27017
+      MONGO_DB: supportpilot
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-token-change-me}
+      CORS_ORIGINS: '["http://localhost:5173","http://localhost:8080"]'
+      NOTIFIER_GRPC_TARGET: notifier:50051
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  agent-worker:
+    build:
+      context: ..
+      dockerfile: apps/agent-worker/Dockerfile
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      NOTIFIER_GRPC_TARGET: notifier:50051
+      LLM_PROVIDER: ${LLM_PROVIDER:-fake}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    depends_on:
+      redis:
+        condition: service_healthy
+      notifier:
+        condition: service_started
+
+  notifier:
+    build:
+      context: ..
+      dockerfile: apps/notifier/Dockerfile
+    ports:
+      - "50051:50051"
+    environment:
+      GRPC_PORT: "50051"
+      REDIS_URL: redis://redis:6379/0
+      API_INTERNAL_BASE_URL: http://api:8000
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-token-change-me}
+    depends_on:
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_started
+
+  web:
+    build:
+      context: ../web
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
+    ports:
+      - "8080:80"
+    depends_on:
+      api:
+        condition: service_started
+
 volumes:
   postgres_data:
   mongo_data:
   redis_data:
-

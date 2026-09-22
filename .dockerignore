@@ -1,0 +1,23 @@
+# Applies to any image built with the repo root as build context (agent-worker, notifier).
+# Each service also has its own .dockerignore for when it's built with its own directory as
+# context (api, web) - Docker only reads the ignore file at the actual build context root.
+.git/
+**/node_modules/
+**/.venv/
+**/venv/
+**/__pycache__/
+**/*.pyc
+**/dist/
+**/build/
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+**/.coverage
+**/*.egg-info/
+**/pb/
+web/
+.env
+**/.env
+!**/.env.example
+*.log
+.DS_Store

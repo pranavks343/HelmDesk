@@ -12,9 +12,6 @@ motor>=3.6
 redis>=5.2
 websockets>=13.1
 httpx>=0.27
-grpcio>=1.68
-grpcio-tools>=1.68
-protobuf>=5.28
 
 pytest>=8.3
 pytest-asyncio>=0.24

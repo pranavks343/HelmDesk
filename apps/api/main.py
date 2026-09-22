@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from core.config import settings
 from core.redis_client import close_redis, get_redis
 from mongo.client import close_mongo
-from routers import auth, kb, tickets, ws
+from routers import auth, internal, kb, tickets, ws
 from ws.redis_bridge import start_redis_bridge, stop_redis_bridge
 
 
@@ -38,6 +38,7 @@ app.include_router(auth.router)
 app.include_router(tickets.router)
 app.include_router(kb.router)
 app.include_router(ws.router)
+app.include_router(internal.router)
 
 
 @app.get("/healthz")

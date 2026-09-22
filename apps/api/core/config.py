@@ -42,6 +42,10 @@ class Settings(BaseSettings):
     # gRPC notifier
     notifier_grpc_target: str = "localhost:50051"
 
+    # Shared secret for service-to-service calls (notifier -> api), not a user JWT. See
+    # routers/internal.py.
+    internal_service_token: str = "dev-internal-token-change-me"  # noqa: S105
+
     environment: str = "development"
 
 

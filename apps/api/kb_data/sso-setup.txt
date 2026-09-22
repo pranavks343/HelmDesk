@@ -1,0 +1,2 @@
+title: SSO Setup
+Nimbus supports SAML 2.0 single sign-on. Go to Settings > Security > SSO, upload your IdP metadata, and map the email attribute to NameID. Test with one admin account before enforcing SSO for the whole workspace.

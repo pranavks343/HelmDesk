@@ -1,0 +1,2 @@
+title: API Rate Limits
+The API allows 60 requests per minute on the Free plan and 600 on Pro. Exceeding the limit returns HTTP 429 with a Retry-After header. Back off exponentially and retry.
